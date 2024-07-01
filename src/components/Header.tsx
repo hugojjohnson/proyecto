@@ -11,14 +11,14 @@ export default function Header(): React.ReactElement {
     return <>
     <div className="flex flex-row justify-between items-center w-full h-20 px-5 absolute">
         <div className="w-12 h-12 opacity-0"></div>
-        <Link to="/dashboard">
-        <p className="p-2 font-extrabold text-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 inline-block text-transparent bg-clip-text hover:cursor-pointer"
-            style={{"fontFamily": "'Playwrite PL'"}}>Proyecto</p>
-        </Link>
         {
-                user !== null ? <Link to="/profile"><img className="w-12 h-12 rounded-full" src="/media/profile.png" alt="profile" /></Link>
+                user === null && (location.pathname === "/login" || location.pathname === "/sign-up") ? <Link to="/"><p className="p-2 font-extrabold text-2xl text-white hover:cursor-pointer" style={{ "fontFamily": "'Playwrite PL'" }}>Proyecto</p></Link>
+                    : <Link to="/dashboard"><p className="p-2 font-extrabold text-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 inline-block text-transparent bg-clip-text hover:cursor-pointer" style={{ "fontFamily": "'Playwrite PL'" }}>Proyecto</p></Link>
+        }
+        {
+                user !== null ? <Link to="/profile"><img className="w-12 h-12 rounded-full" src="./media/profile.png" alt="profile" /></Link>
             : (location.pathname === "/") ? <Link to="/log-in"><p className="text-white text-xl mr-20 p-2 border-2 border-white rounded-md">Sign in</p></Link>
-            : <p></p>
+            : <div className="w-12 h-12 opacity-0"></div>
         }
     </div>
 
