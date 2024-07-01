@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { UserContext } from "../Context";
 import { useNavigate } from "react-router-dom";
+import Input from "./Input";
 
 
 export default function Profile(): React.ReactElement {
@@ -21,15 +22,24 @@ export default function Profile(): React.ReactElement {
 
         <h3 className="text-3xl mt-16">Personal information</h3>
         <div className="w-full border-[1px] border-gray-300"></div>
-        <h5>Username</h5>
-        <h5>Email</h5>
-        <h5>Profile photo</h5>
+        <h5>Username: {user?.username}</h5>
+        <h5>Email: {user?.email}</h5>
+        {/* <h5>Profile photo</h5> */}
 
         <h3 className="text-3xl mt-16">Security</h3>
         <div className="w-full border-[1px] border-gray-300"></div>
-        <h5>Current password</h5>
-        <h5>New password</h5>
-        <h5>Confirm new password</h5>
+        <div className="flex flex-row gap-2">
+            <h5>Current password</h5>
+            <input className="border-2 border-gray-500 rounded-md" />
+        </div>
+        <div className="flex flex-row gap-2">
+            <h5>New password</h5>
+            <Input placeholder="••••••••••" />
+        </div>
+        <div className="flex flex-row gap-2">
+            <h5>Confirm new password</h5>
+            <Input placeholder="••••••••••" />
+        </div>
         <button>Change password</button>
         <button className="rounded-md border-2 border-black px-3 py-1 hover:cursor-pointer" onClick={() => {
             setUser(null)

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { UserContext, ApiUrlContext } from "./Context";
+import { UserContext } from "./Context";
+import { get } from "./Network";
 
 // Components
 import Header from "./components/Header";
@@ -15,40 +16,45 @@ import Profile from "./components/Profile";
 import AddProject from "./components/AddProject";
 import { NoPage } from "./components/NoPage";
 import Project from "./components/ProjectPage";
-import axios from "axios";
 
 function App(): React.ReactElement {
   // Context
-  const [user, setUser] = useState<UserData>(null);
-
-  useEffect(() => {
-
-  }, [])
+  const [user, setUser] = useState<UserData>(undefined);
 
   useEffect(() => {
     const tempUser = JSON.parse(localStorage.getItem("proyectoUser") || "{}")
+    console.log(tempUser)
     if (!tempUser.token) {
+      setUser(null)
       return
     }
 
     setUser(tempUser)
-    console.log("hi")
-    if (user === undefined) {
-      updateUser(tempUser)
-      .then(res => console.log(res))
-    }
+    updateUser(tempUser)
 
     // Update user
-    async function updateUser(tempUser: UserData): Promise<requestResponse> {
-
+    async function updateUser(tempUser: UserData): Promise<void> {
+      const response: requestResponse<unknown> = await get("auth/get-updates", { token: tempUser?.token })
+      setUser({
+        ...tempUser,
+        logs: response.data.logs,
+        projects: response.data.projects
+      })
+      // console.log(response)
     }
-  }, [user?.token])
+  }, [])
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("proyectoUser", JSON.stringify(user))
+    if (user === undefined) {
+      return
     }
-    console.log("User changed.")
+    if (user?.token) {
+      localStorage.setItem("proyectoUser", JSON.stringify(user))
+      console.log("User changed.")
+    } else {
+      localStorage.removeItem("proyectoUser")
+      console.log("Signed out.")
+    }
   }, [user])
 
 
@@ -56,39 +62,35 @@ function App(): React.ReactElement {
   if (user == null) {
     return (
       <UserContext.Provider value={[user, setUser]}>
-        <ApiUrlContext.Provider value={apiUrl}>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Header />}>
-                <Route index element={<Welcome />} />
-                <Route path="sign-up" element={<Signup />} />
-                <Route path="log-in" element={<Login />} />
-                <Route path="*" element={<NoPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ApiUrlContext.Provider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Header />}>
+              <Route index element={<Welcome />} />
+              <Route path="sign-up" element={<Signup />} />
+              <Route path="log-in" element={<Login />} />
+              <Route path="*" element={<NoPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </UserContext.Provider>
     )
 
   }
   return (
     <UserContext.Provider value={[user, setUser]}>
-      <ApiUrlContext.Provider value={apiUrl}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Header />}>
-              <Route index element={<Dashboard />} />
-              <Route path="profile" element={<Profile />} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Header />}>
+            <Route index element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
 
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="add-project" element={<AddProject />} />
-              <Route path="project/:project" element={<Project />} />
-              <Route path="*" element={<NoPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ApiUrlContext.Provider>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="add-project" element={<AddProject />} />
+            <Route path="project/:project" element={<Project />} />
+            <Route path="*" element={<NoPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </UserContext.Provider>
   );
 }

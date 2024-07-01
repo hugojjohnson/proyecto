@@ -31,7 +31,7 @@ export type UserData = {
 
 export type User = [UserData, Dispatch<SetStateAction<UserData>>]
 
-export interface requestResponse {
+export interface requestResponse<T> {
     success: boolean;
-    message: string;
+    data: T | string;
 }

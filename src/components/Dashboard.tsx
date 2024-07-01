@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ApiUrlContext, UserContext } from "../Context";
+import { UserContext } from "../Context";
 import { Project } from "../Interfaces";
-import axios from "axios";
+import { get } from "../Network";
 
 
 function projectCard(proj: Project): React.ReactElement {
@@ -16,14 +16,13 @@ function projectCard(proj: Project): React.ReactElement {
 
 export default function Dashboard(): React.ReactElement {
     const [user] = useContext(UserContext)
-    const apiUrl = useContext(ApiUrlContext)
-    const [quote, setQuote] = useState("")
+    // const [quote, setQuote] = useState("")
 
     useEffect(() => {
-        const response = axios.get(apiUrl + "main/get-quote", { params: { token: user?.token }})
+        const response = get("main/get-quote", { token: user?.token})
         console.log("response")
         console.log(response)
-    }, [apiUrl, user?.token])
+    }, [user?.token])
 
     return <div className="max-w-screen-lg mx-auto pt-40 flex flex-col">
         <h1 className="text-4xl mb-40">Projects</h1>

@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react";
-import { ApiUrlContext, UserContext } from "../Context";
-import axios from "axios";
+import { UserContext } from "../Context";
+import { get } from "../Network";
 
-import { User, requestResponse } from "../Interfaces";
+import { User, UserData, requestResponse } from "../Interfaces";
 import { Link, useNavigate } from "react-router-dom";
 
 function inputArea(label: string, img: string, placeholder: string, password: boolean=false, value: string, updateValue: React.Dispatch<React.SetStateAction<string>>): React.ReactElement {
@@ -21,7 +21,6 @@ function inputArea(label: string, img: string, placeholder: string, password: bo
 
 
 export default function Login(): React.ReactElement {
-    const apiUrl = useContext<string>(ApiUrlContext)
     const [user, setUser] = useContext<User>(UserContext)
 
     const navigate = useNavigate()
@@ -53,11 +52,11 @@ export default function Login(): React.ReactElement {
     async function requestLogin(): Promise<requestResponse> {
         // encrypt the password before sending it
         // from https://stackoverflow.com/questions/18338890
-        async function saltify(message: string): Promise<string> {
+        async function saltify(data: string): Promise<string> {
             // encode as UTF-8
-            const msgBuffer = new TextEncoder().encode(message);
+            const msgBuffer = new TextEncoder().encode(data);
 
-            // hash the message
+            // hash the data
             const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
 
             // convert ArrayBuffer to Array
@@ -73,56 +72,33 @@ export default function Login(): React.ReactElement {
         if (username === "" || password === "") {
             return {
                 success: false,
-                message: "Please fill in the username and password."
+                data: "Please fill in the username and password."
             }
-            }
-            if (username.includes("@")) {
-                return {
+        }
+        if (username.includes("@")) {
+            return {
                 success: false,
-                message: "username is invalid."
-                }
-
+                data: "username is invalid."
             }
+        }
 
-            try {
-                const salt = await saltify(username + password)
-                const response = await axios.get(apiUrl + "auth/sign-in", {
-                    params: {
-                        username: username,
-                        hash: salt
-                    }
-                })
-                if (response.status !== 200) {
-                    return {
-                        success: false,
-                        message: response.data
-                    }
-                }
-                setUser({
-                    username: response.data.user.username,
-                    email: response.data.user.email,
-                    date_joined: new Date(response.data.user.date_joined),
-                    token: response.data.token.value, 
-                    projects: response.data.projects,
-                    logs: response.data.logs
-                });
-                navigate('/');
-                return {
-                    success: true,
-                    message: ""
-                }
-            } catch (err: unknown) {
-                if (err && typeof err === 'object' && 'response' in err) {
-                    const errorResponse = (err as { response: { data: { detail: string } } }).response;
-                    return {
-                        success: false,
-                        message: errorResponse.data.detail || "An unknown error occurred."
-                    };
-                }
-                return {
-                    success: false,
-                    message: "An unknown error occurred."
-                };
-            }
+        const salt = await saltify(username + password)
+        const response = await get<UserData>("auth/sign-in", {
+                username: username,
+                hash: salt
+        })
+        if (response.success) {
+            console.log(response)
+            setUser({
+                username: response.data.user.username,
+                email: response.data.user.email,
+                date_joined: new Date(response.data.user.date_joined),
+                token: response.data.token.value,
+                projects: response.data.projects,
+                logs: response.data.logs
+            });
+            navigate('/');
+        }
+        console.log(response)
     }
 }

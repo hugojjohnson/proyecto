@@ -1,43 +1,64 @@
 import axios from "axios";
-import { useContext } from "react";
-import { ApiUrlContext } from "./Context";
+import { requestResponse } from "./Interfaces";
 
-const apiUrl = 'http://localhost:3001/';
+const apiClient = axios.create({
+    baseURL: 'http://localhost:3001/',
+    timeout: 10000,
+    headers: { 'Content-Type': 'application/json' }
+});
 
-export async function request() {
+export async function get<T>(path: string, params: Record<string, unknown>): Promise<requestResponse<T>> {
     try {
-        const response = await axios.get(apiUrl + "auth/get-updates", {
-            params: {
-                token: tempUser?.token
-            }
-        })
-        if (response.status !== 200) {
+        const response = await apiClient.get(path, { params })
+        if (response.status !== 200 && response.status !== 201) {
             return {
                 success: false,
-                message: response.data
+                data: response.data
             }
         }
-        console.log(response.data.projects)
-        setUser({
-            ...tempUser,
-            projects: response.data.projects,
-            logs: response.data.logs
-        });
         return {
             success: true,
-            message: ""
+            data: response.data
         }
     } catch (err: unknown) {
         if (err && typeof err === 'object' && 'response' in err) {
             const errorResponse = (err as { response: { data: { detail: string } } }).response;
             return {
                 success: false,
-                message: errorResponse.data.detail || "An unknown error occurred."
+                data: errorResponse.data.detail || "An unknown error occurred."
             };
         }
-        // return {
-        //   success: false,
-        //   message: "An unknown error occurred."
-        // };
+        return {
+          success: false,
+          data: "An unknown error occurred because both try and catch didn't run."
+        };
+    }
+}
+
+export async function post<T>(path: string, params?: Record<string, unknown>, body?: Record<string, unknown>): Promise<requestResponse<T>> {
+    try {
+        const response = await apiClient.post(path, body, { params: params })
+        if (response.status !== 200 && response.status !== 201) {
+            return {
+                success: false,
+                data: response.data
+            }
+        }
+        return {
+            success: true,
+            data: response.data
+        }
+    } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'response' in err) {
+            const errorResponse = (err as { response: { data: { detail: string } } }).response;
+            return {
+                success: false,
+                data: errorResponse.data.detail || "An unknown error occurred."
+            };
+        }
+        return {
+            success: false,
+            data: "An unknown error occurred because both try and catch didn't run."
+        };
     }
 }

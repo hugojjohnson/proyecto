@@ -1,7 +1,6 @@
-import React, { useContext, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import { post } from "../Network";
 import { Link, useNavigate } from "react-router-dom";
-import { ApiUrlContext } from "../Context";
 import { requestResponse } from "../Interfaces";
 
 function inputArea(label: string, img: string, placeholder: string, password: boolean = false, value: string, setValue: React.Dispatch<React.SetStateAction<string>>): React.ReactElement {
@@ -20,7 +19,6 @@ function inputArea(label: string, img: string, placeholder: string, password: bo
 
 export default function Signup(): React.ReactElement {
     const navigate = useNavigate()
-    const apiUrl = useContext(ApiUrlContext)
 
     const [username, setUsername] = useState<string>("")
     const [email, setEmail] = useState<string>("")
@@ -50,11 +48,11 @@ export default function Signup(): React.ReactElement {
     async function requestSignUp(): Promise<requestResponse> {
         // encrypt the password before sending it
         // from https://stackoverflow.com/questions/18338890
-        async function saltify(message: string): Promise<string> {
+        async function saltify(data: string): Promise<string> {
             // encode as UTF-8
-            const msgBuffer = new TextEncoder().encode(message);
+            const msgBuffer = new TextEncoder().encode(data);
 
-            // hash the message
+            // hash the data
             const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
 
             // convert ArrayBuffer to Array
@@ -70,55 +68,35 @@ export default function Signup(): React.ReactElement {
         if (username === "" || password === "") {
             return {
                 success: false,
-                message: "Please fill in the username and password."
+                data: "Please fill in the username and password."
             }
         }
         if (password !== confirmPassword) {
             return {
                 success: false,
-                message: "Passwords do not match."
+                data: "Passwords do not match."
             }
         }
         if (!email.includes("@")) {
             return {
                 success: false,
-                message: "Email is not valid."
+                data: "Email is not valid."
             }
         }
 
-        try {
-            const salt = await saltify(username + password)
-            const response = await axios.post(apiUrl + "auth/sign-up", {
-                username: username,
-                email: email,
-                hash: salt,
-                date_joined: new Date(),
-                projects: []
-            })
-            if (response.status !== 201) {
-                console.error(response)
-                return {
-                    success: false,
-                    message: response.data.detail
-                }
-            }
+        const salt = await saltify(username + password)
+        const response = await post("auth/sign-up", {}, {
+            username: username,
+            email: email,
+            hash: salt,
+            date_joined: new Date(),
+            projects: []
+        })
+        if (response.success) {
             navigate("/log-in")
-            return {
-                success: true,
-                message: ""
-            }
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const errorResponse = (err as { response: { data: { detail: string } } }).response;
-                return {
-                    success: false,
-                    message: errorResponse.data.detail || "An unknown error occurred."
-                };
-            }
-            return {
-                success: false,
-                message: "An unknown error occurred."
-            };
+            return response
         }
+        console.log(response)
+        return response
     }
 }

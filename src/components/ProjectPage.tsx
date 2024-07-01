@@ -1,8 +1,8 @@
 import React, { MouseEvent, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ApiUrlContext, UserContext } from "../Context";
+import { UserContext } from "../Context";
 import { Log, Project, User, requestResponse } from "../Interfaces";
-import axios from "axios";
+import { get, post } from "../Network";
 
 
 export default function ProjectPage(): React.ReactElement {
@@ -11,7 +11,6 @@ export default function ProjectPage(): React.ReactElement {
     const [note, setNote] = useState("")
 
     const [user, setUser] = useContext<User>(UserContext)
-    const apiUrl = useContext(ApiUrlContext)
 
     const location = useLocation()
     const navigate = useNavigate()
@@ -69,7 +68,7 @@ export default function ProjectPage(): React.ReactElement {
                 <p className="text-lg text-gray-700">30 mins/day</p>
                 <p className="">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta expedita, debitis officia eaque blanditiis optio aliquid tenetur quidem id ad.</p>
                 {
-                    logs.length > 0 && isSameDate(new Date(logs[0].date)) ? <button className="absolute top-0 right-0 border-2 border-black rounded-md p-1 px-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white w-28">Completed</button>
+                    logs.length > 0 && isSameDate(new Date(logs[0].date)) ? <button className="absolute top-0 right-0 rounded-md p-[6px] px-[10px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white w-28">Completed</button>
                         : <button className="absolute top-0 right-0 border-2 border-black rounded-md p-1 px-2 w-28" onClick={requestAddLog}>Complete</button>
                 }
             </div>
@@ -89,31 +88,13 @@ export default function ProjectPage(): React.ReactElement {
     </div>
     
     async function deleteProject(id:string) {
-        console.log(id)
-        try {
-            const response = await axios.get(apiUrl + "main/delete-project", {
-                params: {
-                    token: user?.token,
-                    id: id
-                }
-            })
-            window.location.reload()
+        const response = await get("main/delete-project", { token: user?.token, id: id })
+        if (response.success) {
             navigate("/")
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const errorResponse = (err as { response: { data: { detail: string } } }).response;
-                return {
-                    success: false,
-                    message: errorResponse.data.detail || "An unknown error occurred."
-                };
-            }
-            return {
-                success: false,
-                message: "An unknown error occurred."
-            };
+            window.location.reload()
         }
-
-        
+        console.log(response)
+        return response
     }
 
     function logCard(log: Log, index: number): React.ReactElement {
@@ -130,11 +111,20 @@ export default function ProjectPage(): React.ReactElement {
                 : <>
                         <div className="flex flex-row items-start"><p className="text-lg">Log: </p><input className="text-lg text-gray-500 border-blue-100 border-2 ml-1" value={goal} onChange={(e) => setGoal(e.target.value)} onBlur={() => changeLog(log["_id"])} /></div>
                         <div className="flex flex-row"><p className="text-gray-700">Notes: </p><input className="text-gray-500 border-blue-100 border-2 ml-2" value={note} onChange={(e) => setNote(e.target.value)} onBlur={() => changeLog(log["_id"])} /></div>
+                        <img src="/media/trash.png" alt="trash" className="absolute bottom-4 right-5 w-6 h-6 hover:cursor-pointer" onClick={() => deleteLog(log["_id"])} />
                 </>
             }
             <div className="h-10 w-10 rounded-full font-extrabold text-lg text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex justify-center items-center absolute top-3 right-3">{index + 1}</div>
             <div className="bg-white/25 w-10 h-10 absolute top-3 right-3"></div>
         </div>
+    }
+
+    async function deleteLog(id: string) {
+        const response = await get("main/delete-log", { token: user?.token, id: id })
+        if (response.success && user) {
+            setUser({ ...user, logs: user?.logs.filter(idk => idk._id !== id) })
+        }
+        console.log(response)
     }
 
     async function changeLog(id: string) {
@@ -150,54 +140,23 @@ export default function ProjectPage(): React.ReactElement {
             })
         }
 
-
-        try {
-            const response = await axios.get(apiUrl + "main/edit-log", {
-                params: {
-                    token: user?.token,
-                    id: id,
-                    goal: goal,
-                    notes: note
-                }
-            })
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const errorResponse = (err as { response: { data: { detail: string } } }).response;
-                return {
-                    success: false,
-                    message: errorResponse.data.detail || "An unknown error occurred."
-                };
-            }
-            return {
-                success: false,
-                message: "An unknown error occurred."
-            };
-        }
+        const response = await get("main/edit-log", { token: user?.token, id: id, goal: goal, notes: note })
+        console.log(response)
     }
-    async function requestAddLog(): Promise<requestResponse> {
-        try {
-            const response = await axios.post(apiUrl + "main/create-log", {
-                user: "hi",
-                project: location.pathname.substring(9),
-                date: new Date(),
-                goal: "idk",
-                notes: "str"
-            }, {
-                params: {
-                    token: user?.token
-                }
-            })
-            if (response.status !== 201) {
-                return {
-                    success: false,
-                    message: response.data
-                }
-            }
+    async function requestAddLog(): Promise<requestResponse<unknown>> {
+        const response = await post("main/create-log", { token: user?.token }, {
+            user: "hi",
+            project: location.pathname.substring(9),
+            date: new Date(),
+            goal: "",
+            notes: ""
+        })
+        if (response.success) {
             if (user) {
                 // eslint-disable-next-line prefer-const
                 let newLogs = user.logs
                 newLogs.push({
-                    id: response.data["_id"],
+                    _id: response.data["_id"],
                     project: location.pathname.substring(9),
                     date: new Date(),
                     goal: "idk",
@@ -208,22 +167,8 @@ export default function ProjectPage(): React.ReactElement {
                     logs: newLogs
                 })
             }
-            return {
-                success: true,
-                message: ""
-            }
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const errorResponse = (err as { response: { data: { detail: string } } }).response;
-                return {
-                    success: false,
-                    message: errorResponse.data.detail || "An unknown error occurred."
-                };
-            }
-            return {
-                success: false,
-                message: "An unknown error occurred."
-            };
         }
+        console.log(response)
+        return response
     }
 }

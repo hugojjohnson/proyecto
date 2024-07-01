@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { requestResponse } from "../Interfaces";
-import axios from "axios";
-import { ApiUrlContext, UserContext } from "../Context";
+import { post } from "../Network";
+import { UserContext } from "../Context";
 import { useNavigate } from "react-router-dom";
 
 
@@ -11,7 +11,6 @@ export default function AddProject(): React.ReactElement {
     const [duration, setDuration] = useState<string>("")
     const [cover, setCover] = useState<File>()
 
-    const apiUrl = useContext(ApiUrlContext)
     const [user, setUser] = useContext(UserContext)
     
     const navigate = useNavigate()
@@ -117,61 +116,40 @@ export default function AddProject(): React.ReactElement {
         reader.onerror = reject;
     })}
 
-    async function requestAddProject(): Promise<requestResponse> {
+    async function requestAddProject(): Promise<requestResponse<unknown>> {
         const base64Img: string = await getBase64(cover)
-        try {
-            const response = await axios.post(apiUrl + "main/create-project", {
-                user: "hi",
+        const response = await post("main/create-project", { token: user?.token}, {
+            user: "hi",
+            coverUrl: base64Img,
+            name: name,
+            goal: goal,
+            dateStarted: new Date().toISOString(),
+            duration: parseInt(duration)
+        })
+        if (!response.success) {
+            return response
+        }
+        if (response.success && user) {
+            // eslint-disable-next-line prefer-const
+            let newProjects = user.projects
+            newProjects.push({
+                _id: response.data["_id"],
                 coverUrl: base64Img,
                 name: name,
                 goal: goal,
-                dateStarted: new Date().toISOString(),
-                duration: parseInt(duration)
-            }, {
-                params: {
-                    token: user?.token
-                }
+                dateStarted: new Date(),
+                duration: parseInt(duration),
+                logs: []
             })
-            if (response.status !== 201) {
-                return {
-                    success: false,
-                    message: response.data
-                }
-            }
-            if (user) {
-                // eslint-disable-next-line prefer-const
-                let newProjects = user.projects
-                newProjects.push({
-                    _id: response.data["_id"],
-                    coverUrl: base64Img,
-                    name: name,
-                    goal: goal,
-                    dateStarted: new Date(),
-                    duration: parseInt(duration),
-                    logs: []
-                })
-                setUser({
-                    ...user,
-                    projects: newProjects
-                })
-            }
+            setUser({
+                ...user,
+                projects: newProjects
+            })
             navigate('/');
-            return {
-                success: true,
-                message: ""
-            }
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const errorResponse = (err as { response: { data: { detail: string } } }).response;
-                return {
-                    success: false,
-                    message: errorResponse.data.detail || "An unknown error occurred."
-                };
-            }
-            return {
-                success: false,
-                message: "An unknown error occurred."
-            };
         }
+        return {
+            success: false,
+            data: "An unknown error occurred."
+        };
     }
 }
