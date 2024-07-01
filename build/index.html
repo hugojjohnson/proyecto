@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/logo-Byo8Tlqr.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proyecto</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playwrite+PL:wght@100..400&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-BTIIIboi.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-NKt9vgCn.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- At the moment, the fading thing does not work. I think it needs a React solution. -->
+    <!-- <script defer>
+      document.addEventListener('DOMContentLoaded', function () {
+        const observerOptions = {
+          root: null, // Use the viewport as the root
+          rootMargin: '0px 0px -10% 0px', // Adjust to trigger when element is above the bottom 25%
+          threshold: 0 // Trigger as soon as the element crosses the threshold
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classNameList.add('animate-fadeInFast');
+              entry.target.classNameList.remove('opacity-0');
+              observer.unobserve(entry.target); // Stop observing after animation is triggered
+            }
+          });
+        }, observerOptions);
+
+        const elements = document.querySelectorAll('.opacity-0');
+        elements.forEach((element) => observer.observe(element));
+      });
+    </script> -->
+  </body>
+</html>
