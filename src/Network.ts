@@ -2,7 +2,8 @@ import axios from "axios";
 import { requestResponse } from "./Interfaces";
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:3001/',
+    // baseURL: "http://localhost:3001/",
+    baseURL: "https://proyecto-backend-6c54e5275130.herokuapp.com/",
     timeout: 10000,
     headers: { 'Content-Type': 'application/json' }
 });
