@@ -68,7 +68,7 @@ function App(): React.ReactElement {
   if (user == null) {
     return (
       <UserContext.Provider value={[user, setUser]}>
-        <BrowserRouter basename="/proyecto-2">
+        <BrowserRouter basename="proyecto">
           <Routes>
             <Route path="/" element={<Header />}>
               <Route index element={<Welcome />} />
@@ -84,7 +84,7 @@ function App(): React.ReactElement {
   }
   return (
     <UserContext.Provider value={[user, setUser]}>
-      <BrowserRouter basename="/proyecto-2">
+      <BrowserRouter basename="proyecto">
         <Routes>
           <Route path="/" element={<Header />}>
             <Route index element={<Dashboard />} />

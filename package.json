@@ -2,7 +2,7 @@
   "name": "proyecto",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://hugojjohnson.github.io/proyecto-2/",
+  "homepage": "https://hugojjohnson.github.io/proyecto",
   "type": "module",
   "scripts": {
     "start": "vite",
