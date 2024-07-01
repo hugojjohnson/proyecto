@@ -133,7 +133,7 @@ export default function ProjectPage(): React.ReactElement {
         const i = logs_copy?.indexOf(j)
         logs_copy[i].goal = goal
         logs_copy[i].notes = note
-        if (user !== null) {
+        if (user !== null && user !== undefined) {
             setUser({
                 ...user,
                 logs: logs_copy
@@ -143,8 +143,12 @@ export default function ProjectPage(): React.ReactElement {
         const response = await get("main/edit-log", { token: user?.token, id: id, goal: goal, notes: note })
         console.log(response)
     }
-    async function requestAddLog(): Promise<requestResponse<unknown>> {
-        const response = await post("main/create-log", { token: user?.token }, {
+
+    interface responseType {
+        _id: string
+    }
+    async function requestAddLog(): Promise<requestResponse<responseType>> {
+        const response = await post<responseType>("main/create-log", { token: user?.token }, {
             user: "hi",
             project: location.pathname.substring(9),
             date: new Date(),
@@ -152,10 +156,11 @@ export default function ProjectPage(): React.ReactElement {
             notes: ""
         })
         if (response.success) {
-            if (user) {
+            if (user && typeof response.data !== "string") {
                 // eslint-disable-next-line prefer-const
                 let newLogs = user.logs
                 newLogs.push({
+                    /* tslint:disable-next-line */
                     _id: response.data["_id"],
                     project: location.pathname.substring(9),
                     date: new Date(),

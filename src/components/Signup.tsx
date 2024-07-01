@@ -45,7 +45,7 @@ export default function Signup(): React.ReactElement {
     </div>
 
 
-    async function requestSignUp(): Promise<requestResponse> {
+    async function requestSignUp(): Promise<requestResponse<unknown>> {
         // encrypt the password before sending it
         // from https://stackoverflow.com/questions/18338890
         async function saltify(data: string): Promise<string> {

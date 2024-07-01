@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { UserContext } from "../Context";
 import { get } from "../Network";
 
-import { User, UserData, requestResponse } from "../Interfaces";
+import { Log, Project, User, requestResponse } from "../Interfaces";
 import { Link, useNavigate } from "react-router-dom";
 
 function inputArea(label: string, img: string, placeholder: string, password: boolean=false, value: string, updateValue: React.Dispatch<React.SetStateAction<string>>): React.ReactElement {
@@ -21,7 +21,7 @@ function inputArea(label: string, img: string, placeholder: string, password: bo
 
 
 export default function Login(): React.ReactElement {
-    const [user, setUser] = useContext<User>(UserContext)
+    const [, setUser] = useContext<User>(UserContext)
 
     const navigate = useNavigate()
 
@@ -47,9 +47,14 @@ export default function Login(): React.ReactElement {
     </div>
 
 
+    interface responseType {
+        user: { username: string, email: string, date_joined: string },
+        token: { value: string },
+        projects: Project[],
+        logs: Log[]
+    }
 
-
-    async function requestLogin(): Promise<requestResponse> {
+    async function requestLogin(): Promise<requestResponse<responseType>> {
         // encrypt the password before sending it
         // from https://stackoverflow.com/questions/18338890
         async function saltify(data: string): Promise<string> {
@@ -83,11 +88,11 @@ export default function Login(): React.ReactElement {
         }
 
         const salt = await saltify(username + password)
-        const response = await get<UserData>("auth/sign-in", {
+        const response = await get<responseType>("auth/sign-in", {
                 username: username,
                 hash: salt
         })
-        if (response.success) {
+        if (response.success && typeof response.data !== "string") {
             console.log(response)
             setUser({
                 username: response.data.user.username,
@@ -100,5 +105,9 @@ export default function Login(): React.ReactElement {
             navigate('/');
         }
         console.log(response)
+        return {
+            success: false,
+            data: "An unknown error occurred."
+        }
     }
 }

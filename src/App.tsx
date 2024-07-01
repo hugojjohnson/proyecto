@@ -10,12 +10,12 @@ import Signup from "./components/Signup";
 import Login from "./components/Login";
 
 // Interfaces
-import { UserData, requestResponse } from "./Interfaces";
+import { Log, Project, UserData, requestResponse } from "./Interfaces";
 import Dashboard from "./components/Dashboard";
 import Profile from "./components/Profile";
 import AddProject from "./components/AddProject";
 import { NoPage } from "./components/NoPage";
-import Project from "./components/ProjectPage";
+import ProjectPage from "./components/ProjectPage";
 
 function App(): React.ReactElement {
   // Context
@@ -33,13 +33,19 @@ function App(): React.ReactElement {
     updateUser(tempUser)
 
     // Update user
+    interface responseType {
+      logs: Log[],
+      projects: Project[]
+    }
     async function updateUser(tempUser: UserData): Promise<void> {
-      const response: requestResponse<unknown> = await get("auth/get-updates", { token: tempUser?.token })
-      setUser({
-        ...tempUser,
-        logs: response.data.logs,
-        projects: response.data.projects
-      })
+      const response: requestResponse<responseType> = await get("auth/get-updates", { token: tempUser?.token })
+      if (typeof response.data !== "string" && tempUser?.username) {
+        setUser({
+          ...tempUser,
+          logs: response.data.logs,
+          projects: response.data.projects
+        })
+      }
       // console.log(response)
     }
   }, [])
@@ -62,7 +68,7 @@ function App(): React.ReactElement {
   if (user == null) {
     return (
       <UserContext.Provider value={[user, setUser]}>
-        <BrowserRouter>
+        <BrowserRouter basename="/">
           <Routes>
             <Route path="/" element={<Header />}>
               <Route index element={<Welcome />} />
@@ -78,7 +84,7 @@ function App(): React.ReactElement {
   }
   return (
     <UserContext.Provider value={[user, setUser]}>
-      <BrowserRouter>
+      <BrowserRouter basename="/">
         <Routes>
           <Route path="/" element={<Header />}>
             <Route index element={<Dashboard />} />
@@ -86,7 +92,7 @@ function App(): React.ReactElement {
 
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="add-project" element={<AddProject />} />
-            <Route path="project/:project" element={<Project />} />
+            <Route path="project/:project" element={<ProjectPage />} />
             <Route path="*" element={<NoPage />} />
           </Route>
         </Routes>

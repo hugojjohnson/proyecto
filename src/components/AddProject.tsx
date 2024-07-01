@@ -118,7 +118,12 @@ export default function AddProject(): React.ReactElement {
 
     async function requestAddProject(): Promise<requestResponse<unknown>> {
         const base64Img: string = await getBase64(cover)
-        const response = await post("main/create-project", { token: user?.token}, {
+
+        interface responseType {
+            "_id": string
+        }
+
+        const response: requestResponse<responseType> = await post("main/create-project", { token: user?.token}, {
             user: "hi",
             coverUrl: base64Img,
             name: name,
@@ -129,7 +134,9 @@ export default function AddProject(): React.ReactElement {
         if (!response.success) {
             return response
         }
+
         if (response.success && user) {
+            if (typeof response.data !== "string") {
             // eslint-disable-next-line prefer-const
             let newProjects = user.projects
             newProjects.push({
@@ -145,6 +152,7 @@ export default function AddProject(): React.ReactElement {
                 ...user,
                 projects: newProjects
             })
+        }
             navigate('/');
         }
         return {
