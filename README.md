@@ -1,3 +1,10 @@
+# Notes
+Deploying to GitHub Pages is a bit annoying.. Here's what you have to do:
+1. Run `npm run predeploy`
+2. Change the new `dist` folder to `build`.
+3. In the new `index.html` file, change the javascript and css imports to be relative instead of global.
+4. Run `npm run deploy` again. And voila!
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

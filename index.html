@@ -9,32 +9,35 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playwrite+PL:wght@100..400&display=swap" rel="stylesheet">
+
+    <!-- Start Single Page Apps for GitHub Pages -->
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script checks to see if a redirect is present in the query string,
+      // converts it back into the correct url and adds it to the
+      // browser's history using window.history.replaceState(...),
+      // which won't cause the browser to attempt to load the new url.
+      // When the single page app is loaded further down in this file,
+      // the correct url will be waiting in the browser's history for
+      // the single page app to route accordingly.
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search.slice(1).split('&').map(function (s) {
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    <!-- End Single Page Apps for GitHub Pages -->
+
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- At the moment, the fading thing does not work. I think it needs a React solution. -->
-    <!-- <script defer>
-      document.addEventListener('DOMContentLoaded', function () {
-        const observerOptions = {
-          root: null, // Use the viewport as the root
-          rootMargin: '0px 0px -10% 0px', // Adjust to trigger when element is above the bottom 25%
-          threshold: 0 // Trigger as soon as the element crosses the threshold
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classNameList.add('animate-fadeInFast');
-              entry.target.classNameList.remove('opacity-0');
-              observer.unobserve(entry.target); // Stop observing after animation is triggered
-            }
-          });
-        }, observerOptions);
-
-        const elements = document.querySelectorAll('.opacity-0');
-        elements.forEach((element) => observer.observe(element));
-      });
-    </script> -->
   </body>
 </html>
