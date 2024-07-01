@@ -29,6 +29,7 @@ export async function get<T>(path: string, params: Record<string, unknown>): Pro
                 data: errorResponse.data.detail || "An unknown error occurred."
             };
         }
+        console.error(err)
         return {
           success: false,
           data: "An unknown error occurred because both try and catch didn't run."
@@ -57,6 +58,7 @@ export async function post<T>(path: string, params?: Record<string, unknown>, bo
                 data: errorResponse.data.detail || "An unknown error occurred."
             };
         }
+        console.error(err)
         return {
             success: false,
             data: "An unknown error occurred because both try and catch didn't run."
